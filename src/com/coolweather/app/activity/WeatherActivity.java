@@ -6,6 +6,7 @@ import com.coolweather.app.util.HttpUtil;
 import com.coolweather.app.util.Utility;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -43,6 +44,10 @@ public class WeatherActivity extends Activity implements OnClickListener {
 		temp1Text = (TextView) findViewById(R.id.temp1);
 		temp2Text = (TextView) findViewById(R.id.temp2);
 		// 获取按钮
+		switchCity = (Button) findViewById(R.id.switch_city);
+		refreshWeather = (Button) findViewById(R.id.refresh_weather);
+		switchCity.setOnClickListener(this);
+		refreshWeather.setOnClickListener(this);
 		
 		String countyCode = getIntent().getStringExtra("county_code");
 		
@@ -136,6 +141,23 @@ public class WeatherActivity extends Activity implements OnClickListener {
 	
 	@Override
 	public void onClick(View view) {	
-		
+		switch(view.getId()){
+		case R.id.switch_city:
+			Intent intent = new Intent(this,ChooseAreaActivity.class);
+			intent.putExtra("from_weather_activity", true);
+			startActivity(intent);
+			finish();
+			break;
+		case R.id.refresh_weather:
+			publishText.setText("同步中...");
+			SharedPreferences prefs = getSharedPreferences("weatherinfo",MODE_PRIVATE);
+			String weatherCode = prefs.getString("weather_code", "");
+			if(!TextUtils.isEmpty(weatherCode)){
+				queryWeatherInfo(weatherCode);
+			}
+			break;
+		default:
+			break;
+		}
 	}
 }
