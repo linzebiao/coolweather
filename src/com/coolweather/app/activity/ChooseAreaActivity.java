@@ -15,6 +15,8 @@ import com.coolweather.app.util.Utility;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -32,7 +34,6 @@ public class ChooseAreaActivity extends Activity{
 	public static final int LEVEL_PROVINCE = 0;
 	public static final int LEVEL_CITY = 1;
 	public static final int LEVEL_COUNTY = 2;
-	
 	private ProgressDialog progressDialog;
 	private TextView titleText;
 	private ListView listView;
@@ -40,34 +41,24 @@ public class ChooseAreaActivity extends Activity{
 	private CoolWeatherDB coolWeatherDB;
 	private List<String> dataList = new ArrayList<String>();
 
-	/**
-	* 省列表
-	*/
-	private List<Province> provinceList;
-	/**
-	* 市列表
-	*/
-	private List<City> cityList;
-	/**
-	* 县列表
-	*/
-	private List<County> countyList;
-	/**
-	* 选中的省份
-	*/
-	private Province selectedProvince;
-	/**
-	* 选中的城市
-	*/
-	private City selectedCity;
-	/**
-	* 当前选中的级别
-	*/
-	private int currentLevel;
+	private List<Province> provinceList;	//省列表
+	private List<City> cityList;			//市列表
+	private List<County> countyList;		//县列表
+	private Province selectedProvince;		//选中的省份
+	private City selectedCity;				//选中的城市
+	private int currentLevel;				//当前选中的级别
 	
 	@Override
 	protected void onCreate(Bundle saveInstanceState){
 		super.onCreate(saveInstanceState);
+		SharedPreferences prefs = getSharedPreferences("weatherinfo",MODE_PRIVATE);
+		//第一次操作显示列表，第二次操作city_selected存在直接跳转
+		if(prefs.getBoolean("city_selected",false)){
+			Intent intent = new Intent(this, WeatherActivity.class);
+			startActivity(intent);
+			finish();
+			return;
+		}
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.choose_area);
 		listView = (ListView) findViewById(R.id.list_view);
@@ -84,6 +75,13 @@ public class ChooseAreaActivity extends Activity{
 				}else if(currentLevel == LEVEL_CITY){
 					selectedCity = cityList.get(index);
 					queryCounties();
+				}else if(currentLevel == LEVEL_COUNTY){
+					String countyCode = countyList.get(index).getCountyCode();
+					//因为在onItemClick方法中this代表调用该方法的对象，所以context对象需要ChooseAreaActivity.this。
+					Intent intent = new Intent(ChooseAreaActivity.this,WeatherActivity.class);
+					intent.putExtra("county_code",countyCode);
+					startActivity(intent);
+					finish();
 				}
 			}
 		});
